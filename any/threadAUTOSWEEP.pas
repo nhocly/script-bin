@@ -1,4 +1,4 @@
-unit sdpTHREADS;
+unit threadAUTOSWEEP;
 interface
   var
     spoil_ignoredMobsIDs : Array of Integer;
