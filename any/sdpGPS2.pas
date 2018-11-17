@@ -3,13 +3,17 @@ Interface
 var 
   GPSPrint: Boolean = False;
   GPSPath: String = 'D:\Desktop\git\db\';
-function GPS_Init(vPath: String = 'dbfile.db3'): Boolean;
+  teleportAtGk: String = '1';
+  acceptableDelta: Integer = 300;
+function GPS_Init(vPath: String): Boolean;
 function GPS_MoveTo(vName: String): Boolean; Overload;
 function GPS_MoveTo(endX,endY,endZ: Integer): Boolean; Overload;
+
+function GoHome(vTo: TRestartType = rtTown; vDelay: Integer = 5000): Boolean;
 Implementation
 Uses sdpSTRINGs, sdpBYPASS, sdpREGEX;
 
-function GPS_Init(vPath: String = 'dbfile.db3'): Boolean;
+function GPS_Init(vPath: String): Boolean;
   begin
     if GPSPrint then 
     begin 
@@ -56,13 +60,27 @@ function GPS_MoveToOnePoint(vGps: TGpsPoint): Boolean;
       begin
         teleportText := Copy(aName, 5, 999); // 'tlp:asdasd asd' -> 'asdasd asd'
         if GPSPrint then Print('teleportText = ' + teleportText);
-        if TalkTo(this_gk_id, ['Teleport', teleportText], 'obles') then Delay(3000);
+        if TalkTo(this_gk_id, [teleportAtGk, teleportText], 'obles') then Delay(3000);
       end else 
       begin
         if GPSPrint then 
           Print('Distance to point is <= 2000, will not teleport. Will run.')
       end;
     end;
+    if Copy(aName, 1, 4) = 'nbl:' then 
+    begin
+      if User.DistTo(aX, aY, aZ) > 2000 then 
+      begin
+        teleportText := Copy(aName, 5, 999); // 'nbl:asdasd asd' -> 'asdasd asd'
+        if GPSPrint then Print('teleportText = ' + teleportText);
+        if TalkTo(this_gk_id, ['Nobles', '2', teleportText]) then Delay(3000);
+      end else 
+      begin
+        if GPSPrint then 
+          Print('Distance to point is <= 2000, will not teleport. Will run.')
+      end;
+    end;
+
     Engine.MoveTo(aX, aY, aZ);
     Result := User.DistTo(aX,aY,aZ) < 100;
     if not Result then
@@ -79,12 +97,13 @@ function GPS_MoveTo(vName: String): Boolean; Overload;
     if User.Dead then 
     begin
       Print('User is dead. Terminating GPS_MoveTo');
+      Engine.GoHome;
       Result := False;
       Exit;
     end;
     if GPS_FindPath(vName) then
     begin
-      Print('MovingTo: ' + vName);
+      //Print('MovingTo: ' + vName);
       Result := GPS_RunThePath();
     end;
   end;
@@ -98,7 +117,7 @@ function GPS_MoveTo(endX,endY,endZ: Integer): Boolean; Overload;
     end;
     if GPS_FindPath(endX,endY,endZ) then
     begin
-      Print('MovingTo: Point(' + ToStr(endX) + ', ' + ToStr(endY) + ', ' + ToStr(endZ) + ')');
+      //Print('MovingTo: Point(' + ToStr(endX) + ', ' + ToStr(endY) + ', ' + ToStr(endZ) + ')');
       Result := GPS_RunThePath();
     end;
   end;
@@ -115,7 +134,7 @@ function GPS_FindPath(vName: String; x,y,z: Integer): Boolean; Overload;
       Result := True;
     end else 
     begin 
-      Print('GPS_FindPath could''t find path to ' + vName + ' from Point(' + ToStr(x) + ', ' + ToStr(y) + ', ' + ToStr(z) + ').');
+      Print('GPS_FindPath could''t find path to "' + vName + '" from Point(' + ToStr(x) + ', ' + ToStr(y) + ', ' + ToStr(z) + ').');
       Result := False;
     end;
   end;
@@ -126,11 +145,13 @@ function GPS_FindPath(startX,startY,startZ: Integer): Boolean; Overload;
 function GPS_FindPath(startX,startY,startZ, endX,endY,endZ: Integer): Boolean; Overload;
   begin
     GPS.GetPath(endX, endY, endZ, startX, startY, startZ);
-    if GPS.Count > 0 then 
+    
+    if (GPS.Count > 0) or (sqrt(sqr(endX-startX) + sqr(endY-startY) + sqr(endZ-startZ)) < acceptableDelta) then 
     begin
       Result := True;
     end else 
     begin 
+
       Print('GPS_FindPath could''t find path to Point(' + ToStr(endX) + ', ' + ToStr(endY) + ', ' + ToStr(endZ) + ') from Point(' + ToStr(startX) + ', ' + ToStr(startY) + ', ' + ToStr(startZ) + ').');
       Result := False;
     end;
@@ -171,4 +192,26 @@ function this_gk_id: Integer;
     if (Result < 0) then 
       Print('You should check out this_gk_id function. ID is negative. Value = ' + ToStr(Result));
   end;
+Function GoHome(): Boolean;
+  var
+    x,y,z: Integer;
+    vItem: TL2Item;
+  begin
+    x := User.X; y := User.Y; z := User.Z;
+    if (User.Dead) then Engine.GoHome
+    else
+      if (Inventory.User.ByID(736, vItem)) then
+        Engine.UseItem(736)
+      else
+      begin
+        Engine.UseSkill('Return');
+        Engine.Unstuck;
+        Engine.EnterText('/unstuck');
+      end;
+    Delay(500);
+    Delay(User.Cast.EndTime+50);
+    Delay(1000);
+    Result := (Abs(User.X-x)>500) or (Abs(User.Y-y)>500)
+  end;
+
 end.

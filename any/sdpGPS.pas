@@ -270,4 +270,6 @@ function extractTown(name: String; sep: String = ' '): String;
     Result := Copy(name, 5, 999);
     if vPrint then Print('extractTown = ' + Result);
   end;
+Initialization
+  Print('You should not be using sdpGPS, use sdpGPS2');
 end.

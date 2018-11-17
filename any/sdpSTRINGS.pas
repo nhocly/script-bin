@@ -9,6 +9,8 @@ function ToStr(str: String): String; Overload;
 
 function ToInt(dbl: Double): Integer; Overload;
 function ToInt(str: String): Integer; Overload;
+
+function new_line(): String;
 // vectors
 function is_in(a: Integer; arr: Array of Integer): Boolean; Overload;
 function is_in(a: String; arr: Array of String): Boolean; Overload;
@@ -68,18 +70,23 @@ function ToInt(str: String): Integer; Overload;
     end;
 
   end;
+
+function new_line(): String; 
+  begin
+    Result := AnsiString(#13#10);
+  end;
 // vectors
 function is_in(a: Integer; arr: Array of Integer): Boolean; Overload;
   var part: Integer;
   begin
     Result := False;
-    for part in arr do 
+    for part in arr do
     begin 
       if part = a then 
-  	begin 
-  	  Result := True;
-  	  Break;
-  	end;
+      begin 
+  	    Result := True;
+  	    Break;
+  	  end;
     end;
   end;
 function is_in(a: String; arr: Array of String): Boolean; Overload;

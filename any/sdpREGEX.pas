@@ -1,14 +1,15 @@
 Unit sdpREGEX;
 Interface
 Uses Classes;
-function str_detect(str, pattern: String): Boolean;
+function str_detect(str, pattern: String): Boolean; Overload;
+function str_detect(str: String; patterns: Array of String): Boolean; Overload;
 function str_extract(SL: TStringList; pattern: String; output: String = '$0'): String; Overload;
 function str_extract(str, pattern: String; output: String = '$0'): String; Overload;
 function str_extract_all(str, pattern: String; output: String = '$0'): TStringList;
 procedure str_print(SL: TStringList);
 Implementation
 Uses RegExpr, sdpSTRINGS;
-function str_detect(str, pattern: String): Boolean;
+function str_detect(str, pattern: String): Boolean; Overload;
   var
     RegExp: TRegExpr;
   begin
@@ -16,6 +17,19 @@ function str_detect(str, pattern: String): Boolean;
     RegExp.Expression:= pattern;
     Result := RegExp.Exec(str);
   end;
+function str_detect(str: String; patterns: Array of String): Boolean; Overload;
+  var
+    part: String;
+  begin
+    Result := false;
+    for part in patterns do
+      if str_detect(str, part) then 
+        begin
+          Result := true;
+          Break;
+        end;
+  end;
+  
 function str_extract(SL: TStringList; pattern: String; output: String = '$0'): String; Overload;
   var 
     i: Integer;

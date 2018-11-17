@@ -4,12 +4,14 @@ Unit sdpBYPASS;
 Interface
 function Dlg(arr: Array of String; exclude: String = '$a^'; vDelay: Integer = 1000): Boolean;
 function CB(arr: Array of String; exclude: String = '$a^'; vDelay: Integer = 1000): Boolean;
-function GPSTalkTo(vName: String; arr: Array of String; exclude: String = '$a^'; vDelay: Integer = 1000): Boolean; Overload;
+function ByPassArr(arr: Array of String; vDelay: Integer = 1000): String; Overload;
+function GPS_TalkTo(vName: String; arr: Array of String; exclude: String = '$a^'; vDelay: Integer = 1000): Boolean; Overload;
+function GPS_TalkTo(vID: Integer; arr: Array of String; exclude: String = '$a^'; vDelay: Integer = 1000): Boolean; Overload;
 function TalkTo(vID: Integer; arr: Array of String; exclude: String = '$a^'; vDelay: Integer = 1000): Boolean; Overload;
 function TalkTo(vName: String; arr: Array of String; exclude: String = '$a^'; vDelay: Integer = 1000): Boolean; Overload;
 procedure PrintAllTags(source: String = 'DlgText');
 Implementation
-uses SysUtils, Classes, RegExpr, sdpSTRINGS, sdpREGEX, sdpGPS;
+uses SysUtils, Classes, RegExpr, sdpSTRINGS, sdpREGEX, sdpGPS2;
 function Dlg(arr: Array of String; exclude: String = '$a^'; vDelay: Integer = 1000): Boolean;
   begin
     Result := Bypass('DlgText', arr, exclude, vDelay);
@@ -22,6 +24,18 @@ function CB(arr: Array of String; exclude: String = '$a^'; vDelay: Integer = 100
     //else 
     Result := Bypass('CBText', arr, exclude, vDelay);
   end;
+function ByPassArr(arr: Array of String; vDelay: Integer = 1000): String; Overload;
+  var
+    part: String;
+  begin
+    for part in arr do
+    begin
+//      Print(part);
+      if (part <> '') then 
+        Engine.ByPassToServer(part);
+      Delay(vDelay);
+    end;
+  end;
 function bypass(source: string; arr: Array of String; exclude: String; vDelay: Integer): boolean; Overload;
   var 
     part, htmlText, tempStr, fullStr: String;
@@ -29,40 +43,43 @@ function bypass(source: string; arr: Array of String; exclude: String; vDelay: I
     Result := True;
     for part in arr do 
     begin
-      case source of
-        'DlgText': htmlText := Engine.DlgText;
-        'CBText': 
-        begin
-          if (part = arr[0]) and (arr[0] <> '_bbshome') then
+      if part <> '' then 
+      begin
+        case source of
+          'DlgText': htmlText := Engine.DlgText;
+          'CBText': 
           begin
-            Engine.ByPassToServer('_bbshome');
-            fullStr := 'Engine.ByPassToServer(''_bbshome'');' + AnsiString(#13#10);
-            Delay(vDelay);
+            if (part = arr[0]) and (arr[0] <> '_bbshome') then
+            begin
+              Engine.ByPassToServer('_bbshome');
+              fullStr := 'Engine.ByPassToServer(''_bbshome'');' + AnsiString(#13#10);
+              Delay(vDelay);
+            end;
+            htmlText := Engine.CBText;
           end;
-          htmlText := Engine.CBText;
+          else 
+          begin
+            htmlText := source;
+            Print('Unknown source. It better be valid html.');
+          end;
         end;
-        else 
+        if str_detect(part, '^\d*$') then // if digit
         begin
-          htmlText := source;
-          Print('Unknown source "' + source + '". It better be valid html.');
-        end;
-      end;
-      if str_detect(part, '^\d*$') then // if digit
-      begin
-        tempStr := Bypass(htmlText, ToInt(part));
-      end
-      else
-      begin
-        tempStr := Bypass(htmlText, part, exclude);
-        if (tempStr = '') then // if could not find anything to click
+          tempStr := Bypass(htmlText, ToInt(part));
+        end
+        else
         begin
-          Print('Could not find anything with ' + part);
-          // if (vByPassBlindlyIfNotFound) then Engine.ByPassToServer(part);
-          Result := False;
+          tempStr := Bypass(htmlText, part, exclude);
+          if (tempStr = '') then // if could not find anything to click
+          begin
+            Print('Could not find anything with ' + part);
+            // if (vByPassBlindlyIfNotFound) then Engine.ByPassToServer(part);
+            Result := False;
+          end;
         end;
+        //fullStr := fullStr + tempStr + ' // ' + part + AnsiString(#13#10);
+        Delay(vDelay);
       end;
-      //fullStr := fullStr + tempStr + ' // ' + part + AnsiString(#13#10);
-      Delay(vDelay)
     end;
     //Print(fullStr);
   end;
@@ -114,7 +131,18 @@ function bypass(htmlText: string; dlg: Integer): String; Overload;
     end;
     SL.Free;
   end;
-function GPSTalkTo(vName: String; arr: Array of String; exclude: String = '$a^'; vDelay: Integer = 1000): Boolean; Overload;
+
+function GPS_TalkTo(vID: Integer; arr: Array of String; exclude: String = '$a^'; vDelay: Integer = 1000): Boolean; Overload;
+  begin
+    Result := False;
+    if start_dlg(vID, vDelay) then 
+    begin
+      if (User.DistTo(User.Target) > 350) then GPS_MoveTo(User.Target.X, User.Target.Y, User.Target.Z);
+      bypass('DlgText', arr, exclude, vDelay);
+      Result := True;
+    end;
+  end;
+function GPS_TalkTo(vName: String; arr: Array of String; exclude: String = '$a^'; vDelay: Integer = 1000): Boolean; Overload;
   begin
     Result := False;
     if start_dlg(vName, vDelay) then 
