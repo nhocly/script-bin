@@ -3,7 +3,8 @@
 Unit sdpBYPASS;
 Interface
 function Dlg(arr: Array of String; exclude: String = '$a^'; vDelay: Integer = 1000): Boolean;
-function CB(arr: Array of String; exclude: String = '$a^'; vDelay: Integer = 1000; openCB: Boolean = true): Boolean;
+function CB(arr: Array of String; exclude: String = '$a^'; vDelay: Integer = 1000): Boolean;
+function CBn(arr: Array of String; exclude: String = '$a^'; vDelay: Integer = 1000): Boolean; // does what cb does, but doesnt open ALT+B
 function ByPassArr(arr: Array of String; vDelay: Integer = 1000): String; Overload;
 function GPS_TalkTo(vName: String; arr: Array of String; exclude: String = '$a^'; vDelay: Integer = 1000): Boolean; Overload;
 function GPS_TalkTo(vID: Integer; arr: Array of String; exclude: String = '$a^'; vDelay: Integer = 1000): Boolean; Overload;
@@ -16,13 +17,21 @@ function Dlg(arr: Array of String; exclude: String = '$a^'; vDelay: Integer = 10
   begin
     Result := Bypass('DlgText', arr, exclude, vDelay);
   end;
-function CB(arr: Array of String; exclude: String = '$a^'; vDelay: Integer = 1000; openCB: Boolean = true): Boolean;
+function CB(arr: Array of String; exclude: String = '$a^'; vDelay: Integer = 1000): Boolean;
   begin
     Result := True;
     //if str_detect(Engine.CBText, arr[Length(arr)-1]) then // if possible to click right away
     //  Print(Bypass(Engine.CBText, arr[Length(arr)-1], exclude, True))
     //else 
-    Result := Bypass('CBText', arr, exclude, vDelay, openCB);
+    Result := Bypass('CBText', arr, exclude, vDelay, true);
+  end;
+function CBn(arr: Array of String; exclude: String = '$a^'; vDelay: Integer = 1000): Boolean;
+  begin
+    Result := True;
+    //if str_detect(Engine.CBText, arr[Length(arr)-1]) then // if possible to click right away
+    //  Print(Bypass(Engine.CBText, arr[Length(arr)-1], exclude, True))
+    //else 
+    Result := Bypass('CBText', arr, exclude, vDelay, false);
   end;
 function ByPassArr(arr: Array of String; vDelay: Integer = 1000): String; Overload;
   var
@@ -36,7 +45,7 @@ function ByPassArr(arr: Array of String; vDelay: Integer = 1000): String; Overlo
       Delay(vDelay);
     end;
   end;
-function bypass(source: string; arr: Array of String; exclude: String; vDelay: Integer; openCB: Boolean = true): boolean; Overload;
+function bypass(source: string; arr: Array of String; exclude: String; vDelay: Integer): boolean; Overload;
   var 
     part, htmlText, tempStr, fullStr: String;
   begin
