@@ -45,7 +45,7 @@ function ByPassArr(arr: Array of String; vDelay: Integer = 1000): String; Overlo
       Delay(vDelay);
     end;
   end;
-function bypass(source: string; arr: Array of String; exclude: String; vDelay: Integer): boolean; Overload;
+function bypass(source: string; arr: Array of String; exclude: String; vDelay: Integer; openCB: Boolean): boolean; Overload;
   var 
     part, htmlText, tempStr, fullStr: String;
   begin
