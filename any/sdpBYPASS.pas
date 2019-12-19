@@ -45,7 +45,7 @@ function ByPassArr(arr: Array of String; vDelay: Integer = 1000): String; Overlo
       Delay(vDelay);
     end;
   end;
-function bypass(source: string; arr: Array of String; exclude: String; vDelay: Integer; openCB: Boolean): boolean; Overload;
+function bypass(source: string; arr: Array of String; exclude: String; vDelay: Integer; openCB: Boolean = true): boolean; Overload;
   var 
     part, htmlText, tempStr, fullStr: String;
   begin
@@ -147,7 +147,7 @@ function GPS_TalkTo(vID: Integer; arr: Array of String; exclude: String = '$a^';
     if start_dlg(vID, vDelay) then 
     begin
       if (User.DistTo(User.Target) > 350) then GPS_MoveTo(User.Target.X, User.Target.Y, User.Target.Z);
-      bypass('DlgText', arr, exclude, vDelay);
+      bypass('DlgText', arr, exclude, vDelay, true);
       Result := True;
     end;
   end;
