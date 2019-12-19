@@ -3,7 +3,7 @@
 Unit sdpBYPASS;
 Interface
 function Dlg(arr: Array of String; exclude: String = '$a^'; vDelay: Integer = 1000): Boolean;
-function CB(arr: Array of String; exclude: String = '$a^'; vDelay: Integer = 1000): Boolean;
+function CB(arr: Array of String; exclude: String = '$a^'; vDelay: Integer = 1000; openCB: Boolean = true): Boolean;
 function ByPassArr(arr: Array of String; vDelay: Integer = 1000): String; Overload;
 function GPS_TalkTo(vName: String; arr: Array of String; exclude: String = '$a^'; vDelay: Integer = 1000): Boolean; Overload;
 function GPS_TalkTo(vID: Integer; arr: Array of String; exclude: String = '$a^'; vDelay: Integer = 1000): Boolean; Overload;
@@ -16,13 +16,13 @@ function Dlg(arr: Array of String; exclude: String = '$a^'; vDelay: Integer = 10
   begin
     Result := Bypass('DlgText', arr, exclude, vDelay);
   end;
-function CB(arr: Array of String; exclude: String = '$a^'; vDelay: Integer = 1000): Boolean;
+function CB(arr: Array of String; exclude: String = '$a^'; vDelay: Integer = 1000; openCB: Boolean = true): Boolean;
   begin
     Result := True;
     //if str_detect(Engine.CBText, arr[Length(arr)-1]) then // if possible to click right away
     //  Print(Bypass(Engine.CBText, arr[Length(arr)-1], exclude, True))
     //else 
-    Result := Bypass('CBText', arr, exclude, vDelay);
+    Result := Bypass('CBText', arr, exclude, vDelay, openCB);
   end;
 function ByPassArr(arr: Array of String; vDelay: Integer = 1000): String; Overload;
   var
@@ -36,7 +36,7 @@ function ByPassArr(arr: Array of String; vDelay: Integer = 1000): String; Overlo
       Delay(vDelay);
     end;
   end;
-function bypass(source: string; arr: Array of String; exclude: String; vDelay: Integer): boolean; Overload;
+function bypass(source: string; arr: Array of String; exclude: String; vDelay: Integer; openCB: Boolean = true): boolean; Overload;
   var 
     part, htmlText, tempStr, fullStr: String;
   begin
@@ -49,7 +49,7 @@ function bypass(source: string; arr: Array of String; exclude: String; vDelay: I
           'DlgText': htmlText := Engine.DlgText;
           'CBText': 
           begin
-            if (part = arr[0]) and (arr[0] <> '_bbshome') then
+            if (part = arr[0]) and (arr[0] <> '_bbshome') and openCB then
             begin
               Engine.ByPassToServer('_bbshome');
               fullStr := 'Engine.ByPassToServer(''_bbshome'');' + AnsiString(#13#10);
